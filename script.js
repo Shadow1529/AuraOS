@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         contextMenu.classList.add("hidden");
     }
 
-    // --- 2. WINDOW MANAGEMENT ---
+    // --- 2. WINDOW MANAGEMENT & TOUCH DRAGGING ---
     let highestZIndex = 100;
 
     window.bringToFront = function(windowId) {
@@ -130,10 +130,10 @@ document.addEventListener("DOMContentLoaded", () => {
             win.dataset.prevWidth = win.style.width;
             win.dataset.prevHeight = win.style.height;
             
-            win.style.top = "32px";
+            win.style.top = "36px";
             win.style.left = "0px";
             win.style.width = "100vw";
-            win.style.height = "calc(100vh - 32px)";
+            win.style.height = "calc(100vh - 36px)";
             win.dataset.maximized = "true";
         }
     };
@@ -147,19 +147,35 @@ document.addEventListener("DOMContentLoaded", () => {
         activeDragWindow = document.getElementById(windowId);
         bringToFront(windowId);
         
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        
         const rect = activeDragWindow.getBoundingClientRect();
-        dragOffsetX = e.clientX - rect.left;
-        dragOffsetY = e.clientY - rect.top;
+        dragOffsetX = clientX - rect.left;
+        dragOffsetY = clientY - rect.top;
         
         document.addEventListener("mousemove", onMouseMove);
         document.addEventListener("mouseup", onMouseUp);
+        document.addEventListener("touchmove", onTouchMove, { passive: false });
+        document.addEventListener("touchend", onTouchEnd);
     };
 
     function onMouseMove(e) {
         if (!activeDragWindow) return;
         let newX = e.clientX - dragOffsetX;
         let newY = e.clientY - dragOffsetY;
-        if (newY < 32) newY = 32;
+        if (newY < 36) newY = 36;
+        activeDragWindow.style.left = newX + "px";
+        activeDragWindow.style.top = newY + "px";
+    }
+
+    function onTouchMove(e) {
+        if (!activeDragWindow) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        let newX = touch.clientX - dragOffsetX;
+        let newY = touch.clientY - dragOffsetY;
+        if (newY < 36) newY = 36;
         activeDragWindow.style.left = newX + "px";
         activeDragWindow.style.top = newY + "px";
     }
@@ -168,6 +184,12 @@ document.addEventListener("DOMContentLoaded", () => {
         activeDragWindow = null;
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", onMouseUp);
+    }
+
+    function onTouchEnd() {
+        activeDragWindow = null;
+        document.removeEventListener("touchmove", onTouchMove);
+        document.removeEventListener("touchend", onTouchEnd);
     }
 
     window.selectIcon = function(element) {
@@ -259,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.handleTerminalKey = function(e) {
         if (e.key === "Enter") {
             const cmd = terminalInput.value.trim();
-            appendTerminalLine(`alex@auraos:~$ ${cmd}`);
+            appendTerminalLine(`user@auraos:~$ ${cmd}`);
             processCommand(cmd);
             terminalInput.value = "";
             terminalBody.scrollTop = terminalBody.scrollHeight;
@@ -290,10 +312,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 appendTerminalLine(new Date().toString());
                 break;
             case "whoami":
-                appendTerminalLine("alex (System Administrator)");
+                appendTerminalLine("user (System Administrator)");
                 break;
             case "neofetch":
-                appendTerminalLine("       /\\        alex@auraos");
+                appendTerminalLine("       /\\        user@auraos");
                 appendTerminalLine("      /  \\       -----------");
                 appendTerminalLine("     / /\\ \\      OS: AuraOS 2.0 Web Edition");
                 appendTerminalLine("    / ____ \\     Kernel: 6.5.0-webos");
