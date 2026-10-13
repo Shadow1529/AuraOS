@@ -2,356 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AuraOS v2.0 - Universal Web Operating System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AuraOS v2.5 - Professional Web Operating System</title>
     <link rel="stylesheet" href="style.css">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="wallpaper-1">
 
-    <!-- 1. Lock / Login Screen -->
-    <div id="login-screen" class="active">
-        <div class="login-backdrop-blur"></div>
-        <div class="login-container">
-            <div class="avatar-wrapper animate-pulse-slow">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <h2 id="login-username">User</h2>
-            <p class="user-role">System Administrator</p>
-
-            <form id="login-form">
-                <div class="input-group">
-                    <input type="password" id="password-input" placeholder="Enter password (demo)" autocomplete="current-password" required>
-                    <button type="submit" id="login-btn" title="Unlock">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </div>
-                <div id="login-error" class="error-msg">Incorrect password. Hint: type <strong>demo</strong></div>
-            </form>
-            <div class="login-footer-hints">
-                <span><i class="fa-solid fa-hand-pointer"></i> Tap or press Enter to unlock</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. Main WebOS Desktop Workspace -->
-    <div id="desktop-screen">
-        
-        <!-- Top Menu Bar (macOS Style) -->
-        <header class="top-bar">
-            <div class="top-left">
-                <button class="menu-trigger" id="appleMenuBtn" title="Start / System Menu">
-                    <i class="fa-solid fa-cube"></i>
-                </button>
-                <span class="app-name font-bold">AuraOS</span>
-                <span class="menu-item" onclick="openWindow('welcome-win')">Finder</span>
-                <span class="menu-item" onclick="openWindow('explorer-win')">Files</span>
-                <span class="menu-item" onclick="openWindow('terminal-win')">Terminal</span>
-                <span class="menu-item" onclick="openWindow('taskmgr-win')">Process</span>
-                <span class="menu-item" onclick="openWindow('games-win')">Arcade</span>
-            </div>
-            <div class="top-right">
-                <button class="top-widget-btn" id="controlCenterBtn" title="Control Center">
-                    <i class="fa-solid fa-sliders"></i>
-                </button>
-                <span id="current-time">12:00 PM</span>
-                <button id="lock-btn" title="Lock Screen">
-                    <i class="fa-solid fa-lock"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Control Center Popup -->
-        <div id="controlCenter" class="control-center hidden">
-            <div class="cc-grid">
-                <div class="cc-tile active" id="ccWifi" onclick="toggleCcTile('ccWifi')">
-                    <i class="fa-solid fa-wifi"></i>
-                    <span>Wi-Fi</span>
-                </div>
-                <div class="cc-tile active" id="ccBluetooth" onclick="toggleCcTile('ccBluetooth')">
-                    <i class="fa-brands fa-bluetooth-b"></i>
-                    <span>Bluetooth</span>
-                </div>
-                <div class="cc-tile" id="ccDnd" onclick="toggleCcTile('ccDnd')">
-                    <i class="fa-solid fa-moon"></i>
-                    <span>Do Not Disturb</span>
-                </div>
-                <div class="cc-tile active" id="ccBattery" onclick="toggleCcTile('ccBattery')">
-                    <i class="fa-solid fa-bolt"></i>
-                    <span>Power Saver</span>
-                </div>
-            </div>
-            <div class="cc-sliders">
-                <div class="cc-slider-row">
-                    <i class="fa-solid fa-sun"></i>
-                    <input type="range" min="20" max="100" value="100" id="brightnessSlider" oninput="adjustBrightness(this.value)">
-                </div>
-                <div class="cc-slider-row">
-                    <i class="fa-solid fa-volume-high"></i>
-                    <input type="range" min="0" max="100" value="80" id="volumeSlider">
-                </div>
-            </div>
-        </div>
-
-        <!-- Start Menu / App Launcher Overlay -->
-        <div id="startMenu" class="start-menu hidden">
-            <div class="start-search">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search apps, settings, and documents..." id="startSearchInput">
-            </div>
-            <div class="start-section-title">Pinned Applications</div>
-            <div class="start-grid">
-                <div class="start-app-tile" onclick="openWindow('welcome-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-laptop-code tile-blue"></i>
-                    <span>Welcome</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('explorer-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-folder-open tile-yellow"></i>
-                    <span>Explorer</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('notes-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-sticky-note tile-yellow"></i>
-                    <span>Notepad</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('terminal-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-terminal tile-gray"></i>
-                    <span>Terminal</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('calc-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-calculator tile-blue"></i>
-                    <span>Calculator</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('games-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-gamepad tile-purple"></i>
-                    <span>Arcade</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('taskmgr-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-chart-line tile-red"></i>
-                    <span>Task Manager</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('settings-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-gear tile-gray"></i>
-                    <span>Settings</span>
-                </div>
-            </div>
-            <div class="start-footer">
-                <div class="user-profile-mini">
-                    <i class="fa-solid fa-user"></i>
-                    <span>User</span>
-                </div>
-                <button class="power-btn" onclick="lockSystem(); toggleStartMenu();" title="Lock System">
-                    <i class="fa-solid fa-power-off"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Desktop Grid Shortcuts -->
-        <main class="desktop" id="desktopArea">
-            <div class="desktop-icon" onclick="handleIconClick('welcome-win', this)">
-                <i class="fa-solid fa-laptop-code icon-blue"></i>
-                <span>Welcome.app</span>
-            </div>
-            <div class="desktop-icon" onclick="handleIconClick('explorer-win', this)">
-                <i class="fa-solid fa-folder-open icon-yellow"></i>
-                <span>Explorer.exe</span>
-            </div>
-            <div class="desktop-icon" onclick="handleIconClick('notes-win', this)">
-                <i class="fa-solid fa-sticky-note icon-yellow"></i>
-                <span>Notepad.app</span>
-            </div>
-            <div class="desktop-icon" onclick="handleIconClick('terminal-win', this)">
-                <i class="fa-solid fa-terminal icon-gray"></i>
-                <span>Terminal.sh</span>
-            </div>
-            <div class="desktop-icon" onclick="handleIconClick('calc-win', this)">
-                <i class="fa-solid fa-calculator icon-blue"></i>
-                <span>Calculator.app</span>
-            </div>
-            <div class="desktop-icon" onclick="handleIconClick('games-win', this)">
-                <i class="fa-solid fa-gamepad icon-purple"></i>
-                <span>Arcade.exe</span>
-            </div>
-            <div class="desktop-icon" onclick="handleIconClick('taskmgr-win', this)">
-                <i class="fa-solid fa-chart-line icon-red"></i>
-                <span>Taskmgr.exe</span>
-            </div>
-            <div class="desktop-icon" onclick="handleIconClick('settings-win', this)">
-                <i class="fa-solid fa-gear icon-gray"></i>
-                <span>Settings.app</span>
-            </div>
-        </main>
-
-        <!-- Context Menu -->
-        <div id="contextMenu" class="context-menu hidden">
-            <div class="ctx-item" onclick="openWindow('notes-win'); hideContextMenu();"><i class="fa-solid fa-plus"></i> New Note</div>
-            <div class="ctx-item" onclick="openWindow('terminal-win'); hideContextMenu();"><i class="fa-solid fa-terminal"></i> Open Terminal</div>
-            <div class="ctx-divider"></div>
-            <div class="ctx-item" onclick="openWindow('settings-win'); hideContextMenu();"><i class="fa-solid fa-sliders"></i> Personalize Wallpaper</div>
-            <div class="ctx-item" onclick="location.reload()"><i class="fa-solid fa-rotate"></i> Refresh Desktop</div>
-        </div>
-
-        <!-- WINDOW 1: WELCOME APP -->
-        <div id="welcome-win" class="window">
-            <div class="window-header">
-                <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('welcome-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('welcome-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('welcome-win')"></span>
-                </div>
-                <span class="window-title"><i class="fa-solid fa-laptop-code"></i> Welcome to AuraOS</span>
-            </div>
-            <div class="window-body">
-                <div class="welcome-banner">
-                    <h2>Welcome! 👋</h2>
-                    <p>Your web operating system is fully operational. Native support added for touch gestures, iPad viewports, task management, file exploration, and terminal interaction.</p>
-                </div>
-                <div class="stats-cards-grid">
-                    <div class="stat-card">
-                        <i class="fa-solid fa-microchip"></i>
-                        <div>
-                            <span class="stat-label">CPU Load</span>
-                            <span class="stat-val" id="cpuLoadText">12%</span>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fa-solid fa-memory"></i>
-                        <div>
-                            <span class="stat-label">Memory Usage</span>
-                            <span class="stat-val" id="memLoadText">4.2 GB / 16 GB</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- WINDOW 2: FILE EXPLORER -->
-        <div id="explorer-win" class="window">
-            <div class="window-header">
-                <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('explorer-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('explorer-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('explorer-win')"></span>
-                </div>
-                <span class="window-title"><i class="fa-solid fa-folder-open"></i> File Explorer</span>
-            </div>
-            <div class="window-body explorer-body">
-                <div class="explorer-sidebar">
-                    <div class="exp-nav-item active" onclick="switchFolder('home', this)"><i class="fa-solid fa-house"></i> Home</div>
-                    <div class="exp-nav-item" onclick="switchFolder('documents', this)"><i class="fa-solid fa-file-lines"></i> Documents</div>
-                    <div class="exp-nav-item" onclick="switchFolder('pictures', this)"><i class="fa-solid fa-image"></i> Pictures</div>
-                    <div class="exp-nav-item" onclick="switchFolder('system', this)"><i class="fa-solid fa-hard-drive"></i> System (C:)</div>
-                </div>
-                <div class="explorer-content" id="explorerContentArea">
-                    <!-- Populated dynamically -->
-                </div>
-            </div>
-        </div>
-
-        <!-- WINDOW 3: NOTEPAD APP -->
-        <div id="notes-win" class="window">
-            <div class="window-header">
-                <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('notes-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('notes-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('notes-win')"></span>
-                </div>
-                <span class="window-title"><i class="fa-solid fa-sticky-note"></i> Quick Notepad</span>
-            </div>
-            <div class="window-body flex-col">
-                <div class="notepad-toolbar">
-                    <button onclick="clearNotepad()"><i class="fa-solid fa-file"></i> New</button>
-                    <button onclick="saveNotepad()"><i class="fa-solid fa-floppy-disk"></i> Save</button>
-                    <span id="notepadStatus" class="notepad-status">Auto-saved to LocalStorage</span>
-                </div>
-                <textarea id="notepadArea" placeholder="Type your notes here... Changes save instantly."></textarea>
-            </div>
-        </div>
-
-        <!-- WINDOW 4: TERMINAL APP -->
-        <div id="terminal-win" class="window">
-            <div class="window-header">
-                <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('terminal-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('terminal-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('terminal-win')"></span>
-                </div>
-                <span class="window-title"><i class="fa-solid fa-terminal"></i> Terminal Shell</span>
-            </div>
-            <div class="window-body terminal-body" id="terminalBody" onclick="focusTerminalInput()">
-                <div id="terminalOutput">
-                    <p>AuraOS [Version 2.0.4-release]</p>
-                    <p>(c) Aura Corporation. All rights reserved.</p>
-                    <p>Type <strong>help</strong> for a list of available commands.<br>&nbsp;</p>
-                </div>
-                <div class="terminal-input-row">
-                    <span class="term-prompt">user@auraos:~$</span>
-                    <input type="text" id="terminalInput" autofocus autocomplete="off" spellcheck="false" onkeydown="handleTerminalKey(event)">
-                </div>
-            </div>
-        </div>
-
-        <!-- WINDOW 5: CALCULATOR APP -->
-        <div id="calc-win" class="window">
-            <div class="window-header">
-                <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('calc-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('calc-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('calc-win')"></span>
-                </div>
-                <span class="window-title"><i class="fa-solid fa-calculator"></i> Calculator</span>
-            </div>
-            <div class="window-body calc-body">
-                <div id="calcDisplay" class="calc-display">0</div>
-                <div class="calc-grid">
-                    <button onclick="calcClear()" class="calc-btn op">C</button>
-                    <button onclick="calcAppend('%')" class="calc-btn op">%</button>
-                    <button onclick="calcAppend('/')" class="calc-btn op">÷</button>
-                    <button onclick="calcAppend('*')" class="calc-btn op">×</button>
-                    <button onclick="calcAppend('7')" class="calc-btn">7</button>
-                    <button onclick="calcAppend('8')" class="calc-btn">8</button>
-                    <button onclick="calcAppend('9')" class="calc-btn">9</button>
-                    <button onclick="calcAppend('-')" class="calc-btn op">-</button>
-                    <button onclick="calcAppend('4')" class="calc-btn">4</button>
-                    <button onclick="calcAppend('5')" class="calc-btn">5</button>
-                    <button onclick="calcAppend('6')" class="calc-btn">6</button>
-                    <button onclick="calcAppend('+')" class="calc-btn op">+</button>
-                    <button onclick="calcAppend('1')" class="calc-btn">1</button>
-                    <button onclick="calcAppend('2')" class="calc-btn">2</button>
-                    <button onclick="calcAppend('3')" class="calc-btn">3</button>
-                    <button onclick="calcCalculate()" class="calc-btn eq" style="grid-row: span 2;">=</button>
-                    <button onclick="calcAppend('0')" class="calc-btn" style="grid-column: span 2;">0</button>
-                    <button onclick="calcAppend('.')" class="calc-btn">.</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- WINDOW 6: TASK MANAGER -->
-        <div id="taskmgr-win" class="window">
-            <div class="window-header">
-                <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('taskmgr-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('taskmgr-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('taskmgr-win')"></span>
-                </div>
-                <span class="window-title"><iHere is the updated **`index.html`** file. 
-
-All references to "Alex" have been changed to **"User"**, and touch-friendly meta tags and controls have been added to ensure full responsiveness and compatibility across iPads, tablets, and mobile devices:
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AuraOS v2.0 - Advanced Web Operating System</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
-</head>
-<body class="wallpaper-1">
-
-    <!-- 1. Lock / Login Screen -->
+    <!-- TOP-LEVEL SYSTEM LOCK/AUTH SCREEN (Z-Index 999999 for absolute isolation) -->
     <div id="login-screen" class="active">
         <div class="login-backdrop-blur"></div>
         <div class="login-container">
@@ -371,26 +30,26 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
                 <div id="login-error" class="error-msg">Incorrect password. Hint: type <strong>demo</strong></div>
             </form>
             <div class="login-footer-hints">
-                <span><i class="fa-solid fa-keyboard"></i> Press Enter or tap to unlock</span>
+                <span><i class="fa-solid fa-fingerprint"></i> Tap or press Enter to unlock AuraOS</span>
             </div>
         </div>
     </div>
 
-    <!-- 2. Main WebOS Desktop Workspace -->
+    <!-- MAIN DESKTOP WORKSPACE -->
     <div id="desktop-screen">
         
-        <!-- Top Menu Bar (macOS Style) -->
+        <!-- Top Menu Bar -->
         <header class="top-bar">
             <div class="top-left">
-                <button class="menu-trigger" id="appleMenuBtn" title="Start / System Menu">
+                <button class="menu-trigger" id="appleMenuBtn" title="System Menu">
                     <i class="fa-solid fa-cube"></i>
                 </button>
                 <span class="app-name font-bold">AuraOS</span>
-                <span class="menu-item" onclick="openWindow('welcome-win')">Finder</span>
-                <span class="menu-item" onclick="openWindow('explorer-win')">Files</span>
-                <span class="menu-item" onclick="openWindow('terminal-win')">Terminal</span>
-                <span class="menu-item" onclick="openWindow('taskmgr-win')">Process</span>
-                <span class="menu-item" onclick="openWindow('games-win')">Arcade</span>
+                <span class="menu-item" data-action="welcome-win">Finder</span>
+                <span class="menu-item" data-action="explorer-win">Files</span>
+                <span class="menu-item" data-action="terminal-win">Terminal</span>
+                <span class="menu-item" data-action="media-win">Media</span>
+                <span class="menu-item" data-action="games-win">Arcade</span>
             </div>
             <div class="top-right">
                 <button class="top-widget-btn" id="controlCenterBtn" title="Control Center">
@@ -406,19 +65,19 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
         <!-- Control Center Popup -->
         <div id="controlCenter" class="control-center hidden">
             <div class="cc-grid">
-                <div class="cc-tile active" id="ccWifi" onclick="toggleCcTile('ccWifi')">
+                <div class="cc-tile active" id="ccWifi" data-tile="ccWifi">
                     <i class="fa-solid fa-wifi"></i>
                     <span>Wi-Fi</span>
                 </div>
-                <div class="cc-tile active" id="ccBluetooth" onclick="toggleCcTile('ccBluetooth')">
+                <div class="cc-tile active" id="ccBluetooth" data-tile="ccBluetooth">
                     <i class="fa-brands fa-bluetooth-b"></i>
                     <span>Bluetooth</span>
                 </div>
-                <div class="cc-tile" id="ccDnd" onclick="toggleCcTile('ccDnd')">
+                <div class="cc-tile" id="ccDnd" data-tile="ccDnd">
                     <i class="fa-solid fa-moon"></i>
                     <span>Do Not Disturb</span>
                 </div>
-                <div class="cc-tile active" id="ccBattery" onclick="toggleCcTile('ccBattery')">
+                <div class="cc-tile active" id="ccBattery" data-tile="ccBattery">
                     <i class="fa-solid fa-bolt"></i>
                     <span>Power Saver</span>
                 </div>
@@ -426,7 +85,7 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
             <div class="cc-sliders">
                 <div class="cc-slider-row">
                     <i class="fa-solid fa-sun"></i>
-                    <input type="range" min="20" max="100" value="100" id="brightnessSlider" oninput="adjustBrightness(this.value)">
+                    <input type="range" min="20" max="100" value="100" id="brightnessSlider">
                 </div>
                 <div class="cc-slider-row">
                     <i class="fa-solid fa-volume-high"></i>
@@ -435,7 +94,7 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
             </div>
         </div>
 
-        <!-- Start Menu / App Launcher Overlay -->
+        <!-- Start Menu / App Launcher -->
         <div id="startMenu" class="start-menu hidden">
             <div class="start-search">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -443,45 +102,22 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
             </div>
             <div class="start-section-title">Pinned Applications</div>
             <div class="start-grid">
-                <div class="start-app-tile" onclick="openWindow('welcome-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-laptop-code tile-blue"></i>
-                    <span>Welcome</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('explorer-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-folder-open tile-yellow"></i>
-                    <span>Explorer</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('notes-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-sticky-note tile-yellow"></i>
-                    <span>Notepad</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('terminal-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-terminal tile-gray"></i>
-                    <span>Terminal</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('calc-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-calculator tile-blue"></i>
-                    <span>Calculator</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('games-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-gamepad tile-purple"></i>
-                    <span>Arcade</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('taskmgr-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-chart-line tile-red"></i>
-                    <span>Task Manager</span>
-                </div>
-                <div class="start-app-tile" onclick="openWindow('settings-win'); toggleStartMenu();">
-                    <i class="fa-solid fa-gear tile-gray"></i>
-                    <span>Settings</span>
-                </div>
+                <div class="start-app-tile" data-app="welcome-win"><i class="fa-solid fa-laptop-code tile-blue"></i><span>Welcome</span></div>
+                <div class="start-app-tile" data-app="explorer-win"><i class="fa-solid fa-folder-open tile-yellow"></i><span>Explorer</span></div>
+                <div class="start-app-tile" data-app="notes-win"><i class="fa-solid fa-sticky-note tile-yellow"></i><span>Notepad</span></div>
+                <div class="start-app-tile" data-app="terminal-win"><i class="fa-solid fa-terminal tile-gray"></i><span>Terminal</span></div>
+                <div class="start-app-tile" data-app="calc-win"><i class="fa-solid fa-calculator tile-blue"></i><span>Calculator</span></div>
+                <div class="start-app-tile" data-app="media-win"><i class="fa-solid fa-music tile-purple"></i><span>Media Player</span></div>
+                <div class="start-app-tile" data-app="games-win"><i class="fa-solid fa-gamepad tile-purple"></i><span>Arcade</span></div>
+                <div class="start-app-tile" data-app="taskmgr-win"><i class="fa-solid fa-chart-line tile-red"></i><span>Task Manager</span></div>
+                <div class="start-app-tile" data-app="settings-win"><i class="fa-solid fa-gear tile-gray"></i><span>Settings</span></div>
             </div>
             <div class="start-footer">
                 <div class="user-profile-mini">
                     <i class="fa-solid fa-user-astronaut"></i>
                     <span>User</span>
                 </div>
-                <button class="power-btn" onclick="lockSystem(); toggleStartMenu();" title="Lock System">
+                <button class="power-btn" id="startMenuPowerBtn" title="Lock System">
                     <i class="fa-solid fa-power-off"></i>
                 </button>
             </div>
@@ -489,35 +125,39 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
 
         <!-- Desktop Grid Shortcuts -->
         <main class="desktop" id="desktopArea">
-            <div class="desktop-icon" onclick="openWindow('welcome-win')" selectIcon(this)>
+            <div class="desktop-icon" data-app="welcome-win">
                 <i class="fa-solid fa-laptop-code icon-blue"></i>
                 <span>Welcome.app</span>
             </div>
-            <div class="desktop-icon" onclick="openWindow('explorer-win')" selectIcon(this)>
+            <div class="desktop-icon" data-app="explorer-win">
                 <i class="fa-solid fa-folder-open icon-yellow"></i>
                 <span>Explorer.exe</span>
             </div>
-            <div class="desktop-icon" onclick="openWindow('notes-win')" selectIcon(this)>
+            <div class="desktop-icon" data-app="notes-win">
                 <i class="fa-solid fa-sticky-note icon-yellow"></i>
                 <span>Notepad.app</span>
             </div>
-            <div class="desktop-icon" onclick="openWindow('terminal-win')" selectIcon(this)>
+            <div class="desktop-icon" data-app="terminal-win">
                 <i class="fa-solid fa-terminal icon-gray"></i>
                 <span>Terminal.sh</span>
             </div>
-            <div class="desktop-icon" onclick="openWindow('calc-win')" selectIcon(this)>
+            <div class="desktop-icon" data-app="calc-win">
                 <i class="fa-solid fa-calculator icon-blue"></i>
                 <span>Calculator.app</span>
             </div>
-            <div class="desktop-icon" onclick="openWindow('games-win')" selectIcon(this)>
+            <div class="desktop-icon" data-app="media-win">
+                <i class="fa-solid fa-music icon-purple"></i>
+                <span>Media.app</span>
+            </div>
+            <div class="desktop-icon" data-app="games-win">
                 <i class="fa-solid fa-gamepad icon-purple"></i>
                 <span>Arcade.exe</span>
             </div>
-            <div class="desktop-icon" onclick="openWindow('taskmgr-win')" selectIcon(this)>
+            <div class="desktop-icon" data-app="taskmgr-win">
                 <i class="fa-solid fa-chart-line icon-red"></i>
                 <span>Taskmgr.exe</span>
             </div>
-            <div class="desktop-icon" onclick="openWindow('settings-win')" selectIcon(this)>
+            <div class="desktop-icon" data-app="settings-win">
                 <i class="fa-solid fa-gear icon-gray"></i>
                 <span>Settings.app</span>
             </div>
@@ -525,27 +165,32 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
 
         <!-- Context Menu -->
         <div id="contextMenu" class="context-menu hidden">
-            <div class="ctx-item" onclick="openWindow('notes-win'); hideContextMenu();"><i class="fa-solid fa-plus"></i> New Note</div>
-            <div class="ctx-item" onclick="openWindow('terminal-win'); hideContextMenu();"><i class="fa-solid fa-terminal"></i> Open Terminal</div>
+            <div class="ctx-item" data-ctx="notes-win"><i class="fa-solid fa-plus"></i> New Note</div>
+            <div class="ctx-item" data-ctx="terminal-win"><i class="fa-solid fa-terminal"></i> Open Terminal</div>
             <div class="ctx-divider"></div>
-            <div class="ctx-item" onclick="openWindow('settings-win'); hideContextMenu();"><i class="fa-solid fa-sliders"></i> Personalize Wallpaper</div>
-            <div class="ctx-item" onclick="location.reload()"><i class="fa-solid fa-rotate"></i> Refresh Desktop</div>
+            <div class="ctx-item" data-ctx="settings-win"><i class="fa-solid fa-sliders"></i> Personalize Wallpaper</div>
+            <div class="ctx-item" id="ctxRefresh"><i class="fa-solid fa-rotate"></i> Refresh Desktop</div>
         </div>
 
-        <!-- WINDOW 1: WELCOME APP -->
-        <div id="welcome-win" class="window" style="top: 80px; left: 100px; width: 500px; height: 340px;">
-            <div class="window-header" onmousedown="startDrag(event, 'welcome-win')" ontouchstart="startDrag(event, 'welcome-win')">
+        <!-- SNAP ASSIST PREVIEW OVERLAY -->
+        <div id="snapPreview" class="snap-preview hidden"></div>
+
+        <!-- APP WINDOWS -->
+        
+        <!-- 1. WELCOME APP -->
+        <div id="welcome-win" class="window" style="top: 60px; left: 80px; width: 500px; height: 340px;">
+            <div class="window-header" data-window-id="welcome-win">
                 <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('welcome-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('welcome-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('welcome-win')"></span>
+                    <span class="btn-close" data-win-action="close" data-id="welcome-win"></span>
+                    <span class="btn-minimize" data-win-action="minimize" data-id="welcome-win"></span>
+                    <span class="btn-maximize" data-win-action="maximize" data-id="welcome-win"></span>
                 </div>
                 <span class="window-title"><i class="fa-solid fa-laptop-code"></i> Welcome to AuraOS</span>
             </div>
             <div class="window-body">
                 <div class="welcome-banner">
                     <h2>Hello, User! 👋</h2>
-                    <p>Your next-generation web operating system is fully operational across mobile, tablet, and desktop screens.</p>
+                    <p>AuraOS v2.5 is fully responsive with Mobile Safari touch support, window edge-snapping, and active process monitoring.</p>
                 </div>
                 <div class="stats-cards-grid">
                     <div class="stat-card">
@@ -566,114 +211,136 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
             </div>
         </div>
 
-        <!-- WINDOW 2: FILE EXPLORER -->
-        <div id="explorer-win" class="window" style="top: 110px; left: 160px; width: 580px; height: 390px;">
-            <div class="window-header" onmousedown="startDrag(event, 'explorer-win')" ontouchstart="startDrag(event, 'explorer-win')">
+        <!-- 2. FILE EXPLORER -->
+        <div id="explorer-win" class="window" style="top: 90px; left: 140px; width: 580px; height: 390px;">
+            <div class="window-header" data-window-id="explorer-win">
                 <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('explorer-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('explorer-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('explorer-win')"></span>
+                    <span class="btn-close" data-win-action="close" data-id="explorer-win"></span>
+                    <span class="btn-minimize" data-win-action="minimize" data-id="explorer-win"></span>
+                    <span class="btn-maximize" data-win-action="maximize" data-id="explorer-win"></span>
                 </div>
                 <span class="window-title"><i class="fa-solid fa-folder-open"></i> File Explorer</span>
             </div>
             <div class="window-body explorer-body">
                 <div class="explorer-sidebar">
-                    <div class="exp-nav-item active" onclick="switchFolder('home', this)"><i class="fa-solid fa-house"></i> Home</div>
-                    <div class="exp-nav-item" onclick="switchFolder('documents', this)"><i class="fa-solid fa-file-lines"></i> Documents</div>
-                    <div class="exp-nav-item" onclick="switchFolder('pictures', this)"><i class="fa-solid fa-image"></i> Pictures</div>
-                    <div class="exp-nav-item" onclick="switchFolder('system', this)"><i class="fa-solid fa-hard-drive"></i> System (C:)</div>
+                    <div class="exp-nav-item active" data-folder="home"><i class="fa-solid fa-house"></i> Home</div>
+                    <div class="exp-nav-item" data-folder="documents"><i class="fa-solid fa-file-lines"></i> Documents</div>
+                    <div class="exp-nav-item" data-folder="pictures"><i class="fa-solid fa-image"></i> Pictures</div>
+                    <div class="exp-nav-item" data-folder="system"><i class="fa-solid fa-hard-drive"></i> System (C:)</div>
                 </div>
-                <div class="explorer-content" id="explorerContentArea">
-                    <!-- Populated dynamically -->
-                </div>
+                <div class="explorer-content" id="explorerContentArea"></div>
             </div>
         </div>
 
-        <!-- WINDOW 3: NOTEPAD APP -->
-        <div id="notes-win" class="window" style="top: 130px; left: 220px; width: 520px; height: 380px;">
-            <div class="window-header" onmousedown="startDrag(event, 'notes-win')" ontouchstart="startDrag(event, 'notes-win')">
+        <!-- 3. NOTEPAD -->
+        <div id="notes-win" class="window" style="top: 110px; left: 200px; width: 520px; height: 380px;">
+            <div class="window-header" data-window-id="notes-win">
                 <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('notes-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('notes-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('notes-win')"></span>
+                    <span class="btn-close" data-win-action="close" data-id="notes-win"></span>
+                    <span class="btn-minimize" data-win-action="minimize" data-id="notes-win"></span>
+                    <span class="btn-maximize" data-win-action="maximize" data-id="notes-win"></span>
                 </div>
                 <span class="window-title"><i class="fa-solid fa-sticky-note"></i> Quick Notepad</span>
             </div>
             <div class="window-body flex-col">
                 <div class="notepad-toolbar">
-                    <button onclick="clearNotepad()"><i class="fa-solid fa-file"></i> New</button>
-                    <button onclick="saveNotepad()"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+                    <button id="notepadNewBtn"><i class="fa-solid fa-file"></i> New</button>
+                    <button id="notepadSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                     <span id="notepadStatus" class="notepad-status">Auto-saved to LocalStorage</span>
                 </div>
                 <textarea id="notepadArea" placeholder="Type your notes here... Changes save instantly."></textarea>
             </div>
         </div>
 
-        <!-- WINDOW 4: TERMINAL APP -->
-        <div id="terminal-win" class="window" style="top: 160px; left: 280px; width: 540px; height: 360px;">
-            <div class="window-header" onmousedown="startDrag(event, 'terminal-win')" ontouchstart="startDrag(event, 'terminal-win')">
+        <!-- 4. TERMINAL -->
+        <div id="terminal-win" class="window" style="top: 130px; left: 260px; width: 540px; height: 360px;">
+            <div class="window-header" data-window-id="terminal-win">
                 <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('terminal-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('terminal-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('terminal-win')"></span>
+                    <span class="btn-close" data-win-action="close" data-id="terminal-win"></span>
+                    <span class="btn-minimize" data-win-action="minimize" data-id="terminal-win"></span>
+                    <span class="btn-maximize" data-win-action="maximize" data-id="terminal-win"></span>
                 </div>
                 <span class="window-title"><i class="fa-solid fa-terminal"></i> Terminal Shell</span>
             </div>
-            <div class="window-body terminal-body" id="terminalBody" onclick="focusTerminalInput()">
+            <div class="window-body terminal-body" id="terminalBody">
                 <div id="terminalOutput">
-                    <p>AuraOS [Version 2.0.4-release]</p>
+                    <p>AuraOS [Version 2.5.0-release]</p>
                     <p>(c) Aura Corporation. All rights reserved.</p>
-                    <p>Type <strong>help</strong> for a list of available commands.<br>&nbsp;</p>
+                    <p>Type <strong>help</strong> for available commands.<br>&nbsp;</p>
                 </div>
                 <div class="terminal-input-row">
                     <span class="term-prompt">user@auraos:~$</span>
-                    <input type="text" id="terminalInput" autofocus autocomplete="off" spellcheck="false" onkeydown="handleTerminalKey(event)">
+                    <input type="text" id="terminalInput" autofocus autocomplete="off" spellcheck="false">
                 </div>
             </div>
         </div>
 
-        <!-- WINDOW 5: CALCULATOR APP -->
-        <div id="calc-win" class="window" style="top: 180px; left: 340px; width: 320px; height: 400px;">
-            <div class="window-header" onmousedown="startDrag(event, 'calc-win')" ontouchstart="startDrag(event, 'calc-win')">
+        <!-- 5. CALCULATOR -->
+        <div id="calc-win" class="window" style="top: 150px; left: 320px; width: 320px; height: 400px;">
+            <div class="window-header" data-window-id="calc-win">
                 <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('calc-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('calc-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('calc-win')"></span>
+                    <span class="btn-close" data-win-action="close" data-id="calc-win"></span>
+                    <span class="btn-minimize" data-win-action="minimize" data-id="calc-win"></span>
+                    <span class="btn-maximize" data-win-action="maximize" data-id="calc-win"></span>
                 </div>
                 <span class="window-title"><i class="fa-solid fa-calculator"></i> Calculator</span>
             </div>
             <div class="window-body calc-body">
                 <div id="calcDisplay" class="calc-display">0</div>
                 <div class="calc-grid">
-                    <button onclick="calcClear()" class="calc-btn op">C</button>
-                    <button onclick="calcAppend('%')" class="calc-btn op">%</button>
-                    <button onclick="calcAppend('/')" class="calc-btn op">÷</button>
-                    <button onclick="calcAppend('*')" class="calc-btn op">×</button>
-                    <button onclick="calcAppend('7')" class="calc-btn">7</button>
-                    <button onclick="calcAppend('8')" class="calc-btn">8</button>
-                    <button onclick="calcAppend('9')" class="calc-btn">9</button>
-                    <button onclick="calcAppend('-')" class="calc-btn op">-</button>
-                    <button onclick="calcAppend('4')" class="calc-btn">4</button>
-                    <button onclick="calcAppend('5')" class="calc-btn">5</button>
-                    <button onclick="calcAppend('6')" class="calc-btn">6</button>
-                    <button onclick="calcAppend('+')" class="calc-btn op">+</button>
-                    <button onclick="calcAppend('1')" class="calc-btn">1</button>
-                    <button onclick="calcAppend('2')" class="calc-btn">2</button>
-                    <button onclick="calcAppend('3')" class="calc-btn">3</button>
-                    <button onclick="calcCalculate()" class="calc-btn eq" style="grid-row: span 2;">=</button>
-                    <button onclick="calcAppend('0')" class="calc-btn" style="grid-column: span 2;">0</button>
-                    <button onclick="calcAppend('.')" class="calc-btn">.</button>
+                    <button data-calc="C" class="calc-btn op">C</button>
+                    <button data-calc="%" class="calc-btn op">%</button>
+                    <button data-calc="/" class="calc-btn op">÷</button>
+                    <button data-calc="*" class="calc-btn op">×</button>
+                    <button data-calc="7" class="calc-btn">7</button>
+                    <button data-calc="8" class="calc-btn">8</button>
+                    <button data-calc="9" class="calc-btn">9</button>
+                    <button data-calc="-" class="calc-btn op">-</button>
+                    <button data-calc="4" class="calc-btn">4</button>
+                    <button data-calc="5" class="calc-btn">5</button>
+                    <button data-calc="6" class="calc-btn">6</button>
+                    <button data-calc="+" class="calc-btn op">+</button>
+                    <button data-calc="1" class="calc-btn">1</button>
+                    <button data-calc="2" class="calc-btn">2</button>
+                    <button data-calc="3" class="calc-btn">3</button>
+                    <button data-calc="=" class="calc-btn eq" style="grid-row: span 2;">=</button>
+                    <button data-calc="0" class="calc-btn" style="grid-column: span 2;">0</button>
+                    <button data-calc="." class="calc-btn">.</button>
                 </div>
             </div>
         </div>
 
-        <!-- WINDOW 6: TASK MANAGER -->
-        <div id="taskmgr-win" class="window" style="top: 200px; left: 400px; width: 560px; height: 360px;">
-            <div class="window-header" onmousedown="startDrag(event, 'taskmgr-win')" ontouchstart="startDrag(event, 'taskmgr-win')">
+        <!-- 6. MEDIA PLAYER APP -->
+        <div id="media-win" class="window" style="top: 170px; left: 380px; width: 400px; height: 320px;">
+            <div class="window-header" data-window-id="media-win">
                 <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('taskmgr-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('taskmgr-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('taskmgr-win')"></span>
+                    <span class="btn-close" data-win-action="close" data-id="media-win"></span>
+                    <span class="btn-minimize" data-win-action="minimize" data-id="media-win"></span>
+                    <span class="btn-maximize" data-win-action="maximize" data-id="media-win"></span>
+                </div>
+                <span class="window-title"><i class="fa-solid fa-music"></i> Media Player</span>
+            </div>
+            <div class="window-body media-body">
+                <div class="album-art"><i class="fa-solid fa-compact-disc fa-spin-slow"></i></div>
+                <div class="track-info">
+                    <h4 id="trackTitle">Aura Ambient Stream</h4>
+                    <p id="trackArtist">Synthetic Sound Engine</p>
+                </div>
+                <div class="media-controls">
+                    <button id="mediaPrevBtn"><i class="fa-solid fa-backward-step"></i></button>
+                    <button id="mediaPlayBtn" class="play-main"><i class="fa-solid fa-play" id="playIcon"></i></button>
+                    <button id="mediaNextBtn"><i class="fa-solid fa-forward-step"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. TASK MANAGER -->
+        <div id="taskmgr-win" class="window" style="top: 190px; left: 440px; width: 560px; height: 360px;">
+            <div class="window-header" data-window-id="taskmgr-win">
+                <div class="window-controls">
+                    <span class="btn-close" data-win-action="close" data-id="taskmgr-win"></span>
+                    <span class="btn-minimize" data-win-action="minimize" data-id="taskmgr-win"></span>
+                    <span class="btn-maximize" data-win-action="maximize" data-id="taskmgr-win"></span>
                 </div>
                 <span class="window-title"><i class="fa-solid fa-chart-line"></i> Task Manager</span>
             </div>
@@ -692,6 +359,7 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
                     <table class="task-table">
                         <thead>
                             <tr>
+                                <th>PID</th>
                                 <th>Process Name</th>
                                 <th>Status</th>
                                 <th>CPU</th>
@@ -699,21 +367,19 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="processListBody">
-                            <!-- Populated dynamically -->
-                        </tbody>
+                        <tbody id="processListBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- WINDOW 7: GAMES APP (SNAKE ARCADE) -->
-        <div id="games-win" class="window" style="top: 100px; left: 460px; width: 440px; height: 460px;">
-            <div class="window-header" onmousedown="startDrag(event, 'games-win')" ontouchstart="startDrag(event, 'games-win')">
+        <!-- 8. RETRO ARCADE GAME -->
+        <div id="games-win" class="window" style="top: 80px; left: 480px; width: 440px; height: 460px;">
+            <div class="window-header" data-window-id="games-win">
                 <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('games-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('games-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('games-win')"></span>
+                    <span class="btn-close" data-win-action="close" data-id="games-win"></span>
+                    <span class="btn-minimize" data-win-action="minimize" data-id="games-win"></span>
+                    <span class="btn-maximize" data-win-action="maximize" data-id="games-win"></span>
                 </div>
                 <span class="window-title"><i class="fa-solid fa-gamepad"></i> Retro Snake Arcade</span>
             </div>
@@ -721,10 +387,10 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
                 <div class="arcade-score-board">
                     <span>Score: <strong id="snakeScore">0</strong></span>
                     <span>High Score: <strong id="snakeHighScore">0</strong></span>
-                    <button id="snakeStartBtn" onclick="startSnakeGame()">Start Game</button>
+                    <button id="snakeStartBtn">Start Game</button>
                 </div>
                 <div class="canvas-wrapper">
-                    <canvas id="snakeCanvas" width="380" height="320"></canvas>
+                    <canvas id="snakeCanvas" width="380" height="300"></canvas>
                     <div id="snakeOverlay" class="arcade-overlay">
                         <h3>Press Start to Play</h3>
                         <p>Use Arrow Keys or Swipe Controls</p>
@@ -733,13 +399,13 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
             </div>
         </div>
 
-        <!-- WINDOW 8: SETTINGS APP -->
-        <div id="settings-win" class="window" style="top: 150px; left: 500px; width: 450px; height: 320px;">
-            <div class="window-header" onmousedown="startDrag(event, 'settings-win')" ontouchstart="startDrag(event, 'settings-win')">
+        <!-- 9. SETTINGS APP -->
+        <div id="settings-win" class="window" style="top: 120px; left: 520px; width: 450px; height: 320px;">
+            <div class="window-header" data-window-id="settings-win">
                 <div class="window-controls">
-                    <span class="btn-close" onclick="closeWindow('settings-win')"></span>
-                    <span class="btn-minimize" onclick="minimizeWindow('settings-win')"></span>
-                    <span class="btn-maximize" onclick="maximizeWindow('settings-win')"></span>
+                    <span class="btn-close" data-win-action="close" data-id="settings-win"></span>
+                    <span class="btn-minimize" data-win-action="minimize" data-id="settings-win"></span>
+                    <span class="btn-maximize" data-win-action="maximize" data-id="settings-win"></span>
                 </div>
                 <span class="window-title"><i class="fa-solid fa-gear"></i> System Settings</span>
             </div>
@@ -747,10 +413,10 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
                 <h3>Appearance & Wallpapers</h3>
                 <p class="setting-desc">Choose your desktop wallpaper theme:</p>
                 <div class="wallpaper-picker">
-                    <button class="wp-btn wp-1" onclick="setWallpaper('wallpaper-1')" title="Abstract Neon"></button>
-                    <button class="wp-btn wp-2" onclick="setWallpaper('wallpaper-2')" title="Cyberpunk Vibe"></button>
-                    <button class="wp-btn wp-3" onclick="setWallpaper('wallpaper-3')" title="Minimal Clean"></button>
-                    <button class="wp-btn wp-4" onclick="setWallpaper('wallpaper-4')" title="Deep Space"></button>
+                    <button class="wp-btn wp-1" data-wp="wallpaper-1" title="Abstract Neon"></button>
+                    <button class="wp-btn wp-2" data-wp="wallpaper-2" title="Cyberpunk Vibe"></button>
+                    <button class="wp-btn wp-3" data-wp="wallpaper-3" title="Minimal Clean"></button>
+                    <button class="wp-btn wp-4" data-wp="wallpaper-4" title="Deep Space"></button>
                 </div>
                 <div class="setting-row">
                     <span>System Sound Effects</span>
@@ -763,45 +429,20 @@ All references to "Alex" have been changed to **"User"**, and touch-friendly met
             </div>
         </div>
 
-        <!-- Dock / Taskbar -->
+        <!-- DOCK / TASKBAR -->
         <div class="dock-container">
             <div class="dock">
-                <div class="dock-item" onclick="openWindow('welcome-win')" title="Welcome">
-                    <i class="fa-solid fa-laptop-code icon-blue"></i>
-                    <span class="dock-dot" id="dot-welcome-win"></span>
-                </div>
-                <div class="dock-item" onclick="openWindow('explorer-win')" title="Explorer">
-                    <i class="fa-solid fa-folder-open icon-yellow"></i>
-                    <span class="dock-dot" id="dot-explorer-win"></span>
-                </div>
-                <div class="dock-item" onclick="openWindow('notes-win')" title="Notepad">
-                    <i class="fa-solid fa-sticky-note icon-yellow"></i>
-                    <span class="dock-dot" id="dot-notes-win"></span>
-                </div>
-                <div class="dock-item" onclick="openWindow('terminal-win')" title="Terminal">
-                    <i class="fa-solid fa-terminal icon-gray"></i>
-                    <span class="dock-dot" id="dot-terminal-win"></span>
-                </div>
-                <div class="dock-item" onclick="openWindow('calc-win')" title="Calculator">
-                    <i class="fa-solid fa-calculator icon-blue"></i>
-                    <span class="dock-dot" id="dot-calc-win"></span>
-                </div>
-                <div class="dock-item" onclick="openWindow('games-win')" title="Arcade">
-                    <i class="fa-solid fa-gamepad icon-purple"></i>
-                    <span class="dock-dot" id="dot-games-win"></span>
-                </div>
-                <div class="dock-item" onclick="openWindow('taskmgr-win')" title="Task Manager">
-                    <i class="fa-solid fa-chart-line icon-red"></i>
-                    <span class="dock-dot" id="dot-taskmgr-win"></span>
-                </div>
-                <div class="dock-item" onclick="openWindow('settings-win')" title="Settings">
-                    <i class="fa-solid fa-gear icon-gray"></i>
-                    <span class="dock-dot" id="dot-settings-win"></span>
-                </div>
+                <div class="dock-item" data-app="welcome-win" title="Welcome"><i class="fa-solid fa-laptop-code icon-blue"></i><span class="dock-dot" id="dot-welcome-win"></span></div>
+                <div class="dock-item" data-app="explorer-win" title="Explorer"><i class="fa-solid fa-folder-open icon-yellow"></i><span class="dock-dot" id="dot-explorer-win"></span></div>
+                <div class="dock-item" data-app="notes-win" title="Notepad"><i class="fa-solid fa-sticky-note icon-yellow"></i><span class="dock-dot" id="dot-notes-win"></span></div>
+                <div class="dock-item" data-app="terminal-win" title="Terminal"><i class="fa-solid fa-terminal icon-gray"></i><span class="dock-dot" id="dot-terminal-win"></span></div>
+                <div class="dock-item" data-app="calc-win" title="Calculator"><i class="fa-solid fa-calculator icon-blue"></i><span class="dock-dot" id="dot-calc-win"></span></div>
+                <div class="dock-item" data-app="media-win" title="Media Player"><i class="fa-solid fa-music icon-purple"></i><span class="dock-dot" id="dot-media-win"></span></div>
+                <div class="dock-item" data-app="games-win" title="Arcade"><i class="fa-solid fa-gamepad icon-purple"></i><span class="dock-dot" id="dot-games-win"></span></div>
+                <div class="dock-item" data-app="taskmgr-win" title="Task Manager"><i class="fa-solid fa-chart-line icon-red"></i><span class="dock-dot" id="dot-taskmgr-win"></span></div>
+                <div class="dock-item" data-app="settings-win" title="Settings"><i class="fa-solid fa-gear icon-gray"></i><span class="dock-dot" id="dot-settings-win"></span></div>
                 <div class="dock-divider"></div>
-                <div class="dock-item" onclick="lockSystem()" title="Lock Screen">
-                    <i class="fa-solid fa-power-off icon-danger"></i>
-                </div>
+                <div class="dock-item" id="dockLockBtn" title="Lock Screen"><i class="fa-solid fa-power-off icon-danger"></i></div>
             </div>
         </div>
 

@@ -6,13 +6,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const passwordInput = document.getElementById("password-input");
     const loginError = document.getElementById("login-error");
     const currentTimeEl = document.getElementById("current-time");
-    const lockBtn = document.getElementById("lock-btn");
     const appleMenuBtn = document.getElementById("appleMenuBtn");
     const startMenu = document.getElementById("startMenu");
     const controlCenterBtn = document.getElementById("controlCenterBtn");
     const controlCenter = document.getElementById("controlCenter");
     const contextMenu = document.getElementById("contextMenu");
     const desktopArea = document.getElementById("desktopArea");
+    const snapPreview = document.getElementById("snapPreview");
 
     // --- 1. AUTHENTICATION & LOGIN ---
     loginForm.addEventListener("submit", (e) => {
@@ -34,7 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
         controlCenter.classList.add("hidden");
     };
 
-    lockBtn.addEventListener("click", lockSystem);
+    document.getElementById("lock-btn").addEventListener("click", lockSystem);
+    document.getElementById("dockLockBtn").addEventListener("click", lockSystem);
+    document.getElementById("startMenuPowerBtn").addEventListener("click", lockSystem);
 
     appleMenuBtn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -49,26 +51,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.addEventListener("click", (e) => {
-        if (!startMenu.contains(e.target) && e.target !== appleMenuBtn) {
-            startMenu.classList.add("hidden");
-        }
-        if (!controlCenter.contains(e.target) && e.target !== controlCenterBtn) {
-            controlCenter.classList.add("hidden");
-        }
+        if (!startMenu.contains(e.target) && e.target !== appleMenuBtn) startMenu.classList.add("hidden");
+        if (!controlCenter.contains(e.target) && e.target !== controlCenterBtn) controlCenter.classList.add("hidden");
         hideContextMenu();
     });
 
-    window.toggleStartMenu = function() {
-        startMenu.classList.toggle("hidden");
-    };
+    document.querySelectorAll(".cc-tile").forEach(tile => {
+        tile.addEventListener("pointerdown", (e) => {
+            e.stopPropagation();
+            tile.classList.toggle("active");
+        });
+    });
 
-    window.toggleCcTile = function(id) {
-        document.getElementById(id).classList.toggle("active");
-    };
-
-    window.adjustBrightness = function(val) {
-        document.body.style.filter = `brightness(${val / 100})`;
-    };
+    const brightnessSlider = document.getElementById("brightnessSlider");
+    if (brightnessSlider) {
+        brightnessSlider.addEventListener("input", (e) => {
+            document.body.style.filter = `brightness(${e.target.value / 100})`;
+        });
+    }
 
     desktopArea.addEventListener("contextmenu", (e) => {
         e.preventDefault();
@@ -81,8 +81,32 @@ document.addEventListener("DOMContentLoaded", () => {
         contextMenu.classList.add("hidden");
     }
 
-    // --- 2. WINDOW MANAGEMENT & TOUCH DRAGGING ---
+    document.getElementById("ctxRefresh").addEventListener("click", () => location.reload());
+
+    // --- 2. UNIFIED POINTER EVENTS FOR TOUCH-RESPONSIVE APP LAUNCHING ---
+    function bindAppOpener(selector, appIdGetter) {
+        document.querySelectorAll(selector).forEach(el => {
+            el.addEventListener("pointerdown", (e) => {
+                e.preventDefault();
+                const appId = typeof appIdGetter === 'function' ? appIdGetter(el) : el.getAttribute(appIdGetter);
+                if (appId) openWindow(appId);
+                startMenu.classList.add("hidden");
+            });
+        });
+    }
+
+    bindAppOpener(".desktop-icon", el => el.getAttribute("data-app"));
+    bindAppOpener(".start-app-tile", el => el.getAttribute("data-app"));
+    bindAppOpener(".dock-item[data-app]", el => el.getAttribute("data-app"));
+    bindAppOpener(".menu-item[data-action]", el => el.getAttribute("data-action"));
+    bindAppOpener(".ctx-item[data-ctx]", el => el.getAttribute("data-ctx"));
+
+    // --- 3. ADVANCED WINDOW MANAGEMENT, SNAPPING & TOUCH DRAGGING ---
     let highestZIndex = 100;
+    let activeDragWindow = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    let currentSnapState = null; // 'left', 'right', or null
 
     window.bringToFront = function(windowId) {
         const win = document.getElementById(windowId);
@@ -97,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.openWindow = function(id) {
         const win = document.getElementById(id);
         if (win) {
+            win.classList.remove("minimized");
             win.classList.add("active");
             bringToFront(id);
             const dot = document.getElementById(`dot-${id}`);
@@ -107,13 +132,21 @@ document.addEventListener("DOMContentLoaded", () => {
     window.closeWindow = function(id) {
         const win = document.getElementById(id);
         if (win) {
-            win.classList.remove("active");
+            win.classList.remove("active", "minimized");
             const dot = document.getElementById(`dot-${id}`);
             if (dot) dot.classList.remove('active');
         }
     };
 
-    window.minimizeWindow = function(id) { closeWindow(id); };
+    window.minimizeWindow = function(id) {
+        const win = document.getElementById(id);
+        if (win) {
+            win.classList.add("minimized");
+            setTimeout(() => {
+                win.classList.remove("active");
+            }, 250);
+        }
+    };
 
     window.maximizeWindow = function(id) {
         const win = document.getElementById(id);
@@ -133,71 +166,91 @@ document.addEventListener("DOMContentLoaded", () => {
             win.style.top = "36px";
             win.style.left = "0px";
             win.style.width = "100vw";
-            win.style.height = "calc(100vh - 36px)";
+            win.style.height = "calc(100dvh - 36px)";
             win.dataset.maximized = "true";
         }
     };
 
-    let activeDragWindow = null;
-    let dragOffsetX = 0;
-    let dragOffsetY = 0;
+    // Header buttons event bindings
+    document.querySelectorAll(".window-controls span").forEach(btn => {
+        btn.addEventListener("pointerdown", (e) => {
+            e.stopPropagation();
+            const action = btn.getAttribute("data-win-action");
+            const id = btn.getAttribute("data-id");
+            if (action === "close") closeWindow(id);
+            if (action === "minimize") minimizeWindow(id);
+            if (action === "maximize") maximizeWindow(id);
+        });
+    });
 
-    window.startDrag = function(e, windowId) {
-        if (e.target.closest('.window-controls')) return;
-        activeDragWindow = document.getElementById(windowId);
-        bringToFront(windowId);
-        
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-        
-        const rect = activeDragWindow.getBoundingClientRect();
-        dragOffsetX = clientX - rect.left;
-        dragOffsetY = clientY - rect.top;
-        
-        document.addEventListener("mousemove", onMouseMove);
-        document.addEventListener("mouseup", onMouseUp);
-        document.addEventListener("touchmove", onTouchMove, { passive: false });
-        document.addEventListener("touchend", onTouchEnd);
-    };
+    // Window Dragging & Edge Snapping
+    document.querySelectorAll(".window-header").forEach(header => {
+        header.addEventListener("pointerdown", (e) => {
+            if (e.target.closest('.window-controls')) return;
+            const windowId = header.getAttribute("data-window-id");
+            activeDragWindow = document.getElementById(windowId);
+            bringToFront(windowId);
 
-    function onMouseMove(e) {
+            const rect = activeDragWindow.getBoundingClientRect();
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
+
+            activeDragWindow.style.transition = "none";
+            document.addEventListener("pointermove", onPointerMove);
+            document.addEventListener("pointerup", onPointerUp);
+        });
+    });
+
+    function onPointerMove(e) {
         if (!activeDragWindow) return;
         let newX = e.clientX - dragOffsetX;
         let newY = e.clientY - dragOffsetY;
         if (newY < 36) newY = 36;
+
         activeDragWindow.style.left = newX + "px";
         activeDragWindow.style.top = newY + "px";
+
+        // Snap Assist Visual Feedback
+        if (e.clientX <= 15) {
+            currentSnapState = 'left';
+            snapPreview.style.left = "0px";
+            snapPreview.style.width = "50vw";
+            snapPreview.classList.remove("hidden");
+        } else if (e.clientX >= window.innerWidth - 15) {
+            currentSnapState = 'right';
+            snapPreview.style.left = "50vw";
+            snapPreview.style.width = "50vw";
+            snapPreview.classList.remove("hidden");
+        } else {
+            currentSnapState = null;
+            snapPreview.classList.add("hidden");
+        }
     }
 
-    function onTouchMove(e) {
+    function onPointerUp(e) {
         if (!activeDragWindow) return;
-        e.preventDefault();
-        const touch = e.touches[0];
-        let newX = touch.clientX - dragOffsetX;
-        let newY = touch.clientY - dragOffsetY;
-        if (newY < 36) newY = 36;
-        activeDragWindow.style.left = newX + "px";
-        activeDragWindow.style.top = newY + "px";
-    }
+        activeDragWindow.style.transition = "";
+        snapPreview.classList.add("hidden");
 
-    function onMouseUp() {
+        if (currentSnapState === 'left') {
+            activeDragWindow.style.top = "36px";
+            activeDragWindow.style.left = "0px";
+            activeDragWindow.style.width = "50vw";
+            activeDragWindow.style.height = "calc(100dvh - 36px)";
+        } else if (currentSnapState === 'right') {
+            activeDragWindow.style.top = "36px";
+            activeDragWindow.style.left = "50vw";
+            activeDragWindow.style.width = "50vw";
+            activeDragWindow.style.height = "calc(100dvh - 36px)";
+        }
+
+        currentSnapState = null;
         activeDragWindow = null;
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+        document.removeEventListener("pointermove", onPointerMove);
+        document.removeEventListener("pointerup", onPointerUp);
     }
 
-    function onTouchEnd() {
-        activeDragWindow = null;
-        document.removeEventListener("touchmove", onTouchMove);
-        document.removeEventListener("touchend", onTouchEnd);
-    }
-
-    window.selectIcon = function(element) {
-        document.querySelectorAll('.desktop-icon').forEach(icon => icon.style.background = 'transparent');
-        element.style.background = 'rgba(255, 255, 255, 0.15)';
-    };
-
-    // --- 3. FILE EXPLORER MOCK SYSTEM ---
+    // --- 4. FILE EXPLORER MOCK SYSTEM ---
     const fileSystem = {
         home: [
             { name: "Welcome.md", type: "file", icon: "fa-file-lines" },
@@ -218,11 +271,13 @@ document.addEventListener("DOMContentLoaded", () => {
         ]
     };
 
-    window.switchFolder = function(folderKey, el) {
-        document.querySelectorAll('.exp-nav-item').forEach(e => e.classList.remove('active'));
-        if (el) el.classList.add('active');
-        renderFiles(fileSystem[folderKey] || []);
-    };
+    document.querySelectorAll(".exp-nav-item").forEach(item => {
+        item.addEventListener("pointerdown", () => {
+            document.querySelectorAll('.exp-nav-item').forEach(e => e.classList.remove('active'));
+            item.classList.add('active');
+            renderFiles(fileSystem[item.getAttribute("data-folder")] || []);
+        });
+    });
 
     function renderFiles(files) {
         const container = document.getElementById("explorerContentArea");
@@ -231,54 +286,50 @@ document.addEventListener("DOMContentLoaded", () => {
         files.forEach(file => {
             const div = document.createElement("div");
             div.className = "exp-file-item";
-            div.innerHTML = `
-                <i class="fa-solid ${file.icon}"></i>
-                <span>${file.name}</span>
-            `;
-            div.ondblclick = () => {
-                if (file.type === 'file' && file.name.endsWith('.md')) openWindow('notes-win');
+            div.innerHTML = `<i class="fa-solid ${file.icon}"></i><span>${file.name}</span>`;
+            div.addEventListener("dblclick", () => {
+                if (file.name.endsWith('.md')) openWindow('notes-win');
                 else alert(`Opened ${file.name}`);
-            };
+            });
             container.appendChild(div);
         });
     }
-    switchFolder('home', document.querySelector('.exp-nav-item'));
+    renderFiles(fileSystem.home);
 
-    // --- 4. NOTEPAD PERSISTENCE ---
+    // --- 5. NOTEPAD PERSISTENCE ---
     const notepadArea = document.getElementById("notepadArea");
     const notepadStatus = document.getElementById("notepadStatus");
 
     if (notepadArea) {
-        notepadArea.value = localStorage.getItem("auraos_notes") || "# AuraOS Quick Notes\n\n- Jot down ideas here.\n- Changes auto-save to local storage instantly.";
-
+        notepadArea.value = localStorage.getItem("auraos_notes") || "# AuraOS Quick Notes\n\n- Jot down ideas here.\n- Auto-saves to LocalStorage instantly.";
         notepadArea.addEventListener("input", () => {
             localStorage.setItem("auraos_notes", notepadArea.value);
             notepadStatus.textContent = "Saving...";
-            setTimeout(() => { notepadStatus.textContent = "Saved to LocalStorage"; }, 600);
+            setTimeout(() => { notepadStatus.textContent = "Saved to LocalStorage"; }, 500);
         });
     }
 
-    window.clearNotepad = function() {
+    document.getElementById("notepadNewBtn").addEventListener("pointerdown", () => {
         if (confirm("Clear all notes?")) {
             notepadArea.value = "";
             localStorage.removeItem("auraos_notes");
             notepadStatus.textContent = "Cleared";
         }
-    };
+    });
 
-    window.saveNotepad = function() {
+    document.getElementById("notepadSaveBtn").addEventListener("pointerdown", () => {
         localStorage.setItem("auraos_notes", notepadArea.value);
         notepadStatus.textContent = "Manually Saved!";
-    };
+    });
 
-    // --- 5. TERMINAL SHELL SIMULATOR ---
+    // --- 6. TERMINAL SHELL SIMULATOR ---
     const terminalOutput = document.getElementById("terminalOutput");
     const terminalInput = document.getElementById("terminalInput");
     const terminalBody = document.getElementById("terminalBody");
 
-    window.focusTerminalInput = function() { if (terminalInput) terminalInput.focus(); };
+    terminalBody.addEventListener("pointerdown", () => terminalInput.focus());
 
-    window.handleTerminalKey = function(e) {
+    terminalInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
             const cmd = terminalInput.value.trim();
             appendTerminalLine(`user@auraos:~$ ${cmd}`);
@@ -286,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
             terminalInput.value = "";
             terminalBody.scrollTop = terminalBody.scrollHeight;
         }
-    };
+    });
 
     function appendTerminalLine(text) {
         const p = document.createElement("p");
@@ -297,10 +348,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function processCommand(cmd) {
         const parts = cmd.split(" ");
         const action = parts[0].toLowerCase();
-        
         switch (action) {
             case "help":
-                appendTerminalLine("Available commands: help, clear, ls, date, whoami, neofetch, echo [text]");
+                appendTerminalLine("Commands: help, clear, ls, date, whoami, neofetch, echo [text]");
                 break;
             case "clear":
                 terminalOutput.innerHTML = "";
@@ -317,7 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
             case "neofetch":
                 appendTerminalLine("       /\\        user@auraos");
                 appendTerminalLine("      /  \\       -----------");
-                appendTerminalLine("     / /\\ \\      OS: AuraOS 2.0 Web Edition");
+                appendTerminalLine("     / /\\ \\      OS: AuraOS 2.5 Web Edition");
                 appendTerminalLine("    / ____ \\     Kernel: 6.5.0-webos");
                 appendTerminalLine("   /_/    \\_\\    Shell: bash 5.2.15");
                 break;
@@ -327,37 +377,49 @@ document.addEventListener("DOMContentLoaded", () => {
             case "":
                 break;
             default:
-                appendTerminalLine(`Command not found: ${action}. Type 'help' for available commands.`);
+                appendTerminalLine(`Command not found: ${action}. Type 'help'.`);
         }
     }
 
-    // --- 6. CALCULATOR ENGINE ---
+    // --- 7. CALCULATOR ENGINE ---
     const calcDisplay = document.getElementById("calcDisplay");
     let calcExpression = "";
 
-    window.calcAppend = function(val) {
-        if (calcExpression === "0" && val !== ".") calcExpression = "";
-        calcExpression += val;
-        calcDisplay.textContent = calcExpression;
-    };
+    document.querySelectorAll(".calc-btn").forEach(btn => {
+        btn.addEventListener("pointerdown", () => {
+            const val = btn.getAttribute("data-calc");
+            if (val === "C") {
+                calcExpression = "0";
+            } else if (val === "=") {
+                try {
+                    calcExpression = eval(calcExpression.replace('×', '*').replace('÷', '/')).toString();
+                } catch {
+                    calcExpression = "Error";
+                }
+            } else {
+                if (calcExpression === "0" && val !== ".") calcExpression = "";
+                calcExpression += val;
+            }
+            calcDisplay.textContent = calcExpression;
+            if (calcExpression === "Error") calcExpression = "0";
+        });
+    });
 
-    window.calcClear = function() {
-        calcExpression = "0";
-        calcDisplay.textContent = calcExpression;
-    };
+    // --- 8. MEDIA PLAYER APP ---
+    const mediaPlayBtn = document.getElementById("mediaPlayBtn");
+    const playIcon = document.getElementById("playIcon");
+    let isPlaying = false;
 
-    window.calcCalculate = function() {
-        try {
-            let res = eval(calcExpression.replace('×', '*').replace('÷', '/'));
-            calcDisplay.textContent = res;
-            calcExpression = res.toString();
-        } catch {
-            calcDisplay.textContent = "Error";
-            calcExpression = "0";
+    mediaPlayBtn.addEventListener("pointerdown", () => {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+            playIcon.className = "fa-solid fa-pause";
+        } else {
+            playIcon.className = "fa-solid fa-play";
         }
-    };
+    });
 
-    // --- 7. TASK MANAGER ---
+    // --- 9. TASK MANAGER PROCESS OVERHAUL ---
     const processListBody = document.getElementById("processListBody");
     const cpuBar = document.getElementById("cpuBar");
     const ramBar = document.getElementById("ramBar");
@@ -365,11 +427,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const memLoadText = document.getElementById("memLoadText");
 
     let activeProcesses = [
-        { id: 1, name: "AuraOS Kernel", status: "Running", cpu: "2%", memory: "140 MB" },
-        { id: 2, name: "Window Compositor", status: "Running", cpu: "4%", memory: "95 MB" },
-        { id: 3, name: "File Explorer", status: "Running", cpu: "0.8%", memory: "65 MB" },
-        { id: 4, name: "Terminal Shell", status: "Running", cpu: "0.2%", memory: "40 MB" },
-        { id: 5, name: "Notepad Daemon", status: "Running", cpu: "0.1%", memory: "30 MB" }
+        { pid: 101, name: "welcome-win", title: "Welcome App", status: "Running", cpu: "2%", memory: "140 MB" },
+        { pid: 102, name: "explorer-win", title: "File Explorer", status: "Running", cpu: "1.2%", memory: "95 MB" },
+        { pid: 103, name: "notes-win", title: "Notepad", status: "Running", cpu: "0.5%", memory: "65 MB" },
+        { pid: 104, name: "terminal-win", title: "Terminal Shell", status: "Running", cpu: "0.3%", memory: "40 MB" },
+        { pid: 105, name: "taskmgr-win", title: "Task Manager", status: "Running", cpu: "3.5%", memory: "85 MB" }
     ];
 
     function renderProcesses() {
@@ -378,24 +440,35 @@ document.addEventListener("DOMContentLoaded", () => {
         activeProcesses.forEach(proc => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td><strong>${proc.name}</strong></td>
-                <td><span style="color: ${proc.status === 'Running' ? '#27c93f' : '#888'}">${proc.status}</span></td>
+                <td><code>${proc.pid}</code></td>
+                <td><strong>${proc.title}</strong></td>
+                <td><span style="color: #27c93f">${proc.status}</span></td>
                 <td>${proc.cpu}</td>
                 <td>${proc.memory}</td>
-                <td><button class="end-task-btn" onclick="killProcess(${proc.id})">End Task</button></td>
+                <td><button class="end-task-btn" data-pid="${proc.pid}" data-name="${proc.name}">End Process</button></td>
             `;
             processListBody.appendChild(tr);
         });
+
+        document.querySelectorAll(".end-task-btn").forEach(btn => {
+            btn.addEventListener("pointerdown", (e) => {
+                e.stopPropagation();
+                const pid = parseInt(btn.getAttribute("data-pid"));
+                const windowName = btn.getAttribute("data-name");
+                killProcess(pid, windowName);
+            });
+        });
     }
 
-    window.killProcess = function(id) {
-        activeProcesses = activeProcesses.filter(p => p.id !== id);
+    window.killProcess = function(pid, windowName) {
+        activeProcesses = activeProcesses.filter(p => p.pid !== pid);
+        closeWindow(windowName);
         renderProcesses();
     };
 
     setInterval(() => {
         const randomCpu = Math.floor(Math.random() * 20) + 10;
-        const randomRam = Math.floor(Math.random() * 4) + 33;
+        const randomRam = Math.floor(Math.random() * 4) + 32;
         if (cpuBar) cpuBar.style.width = randomCpu + "%";
         if (ramBar) ramBar.style.width = randomRam + "%";
         if (cpuLoadText) cpuLoadText.textContent = randomCpu + "%";
@@ -404,13 +477,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderProcesses();
 
-    // --- 8. RETRO SNAKE ARCADE GAME ENGINE ---
+    // --- 10. RETRO SNAKE ARCADE GAME ENGINE ---
     const canvas = document.getElementById("snakeCanvas");
     if (canvas) {
         const ctx = canvas.getContext("2d");
         const snakeScoreEl = document.getElementById("snakeScore");
         const snakeHighScoreEl = document.getElementById("snakeHighScore");
         const snakeOverlay = document.getElementById("snakeOverlay");
+        const snakeStartBtn = document.getElementById("snakeStartBtn");
 
         let snake = [{x: 10, y: 10}];
         let food = {x: 5, y: 5};
@@ -423,7 +497,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         snakeHighScoreEl.textContent = highScore;
 
-        window.startSnakeGame = function() {
+        snakeStartBtn.addEventListener("pointerdown", startSnakeGame);
+
+        function startSnakeGame() {
             snake = [{x: 10, y: 10}];
             dx = 1;
             dy = 0;
@@ -433,9 +509,9 @@ document.addEventListener("DOMContentLoaded", () => {
             snakeOverlay.classList.add("hidden");
             
             if (gameInterval) clearInterval(gameInterval);
-            gameInterval = setInterval(gameLoop, 100);
+            gameInterval = setInterval(gameLoop, 110);
             gameRunning = true;
-        };
+        }
 
         function gameLoop() {
             updateSnake();
@@ -444,7 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 gameRunning = false;
                 snakeOverlay.classList.remove("hidden");
                 snakeOverlay.querySelector("h3").textContent = "Game Over!";
-                snakeOverlay.querySelector("p").textContent = `Final Score: ${score}. Click Start to try again.`;
+                snakeOverlay.querySelector("p").textContent = `Final Score: ${score}. Click Start to play again.`;
                 return;
             }
             drawGame();
@@ -502,16 +578,19 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 9. SETTINGS & WALLPAPERS ---
-    window.setWallpaper = function(themeClass) {
-        document.body.className = themeClass;
-        localStorage.setItem("auraos_wallpaper", themeClass);
-    };
+    // --- 11. SETTINGS & WALLPAPERS ---
+    document.querySelectorAll(".wp-btn").forEach(btn => {
+        btn.addEventListener("pointerdown", () => {
+            const themeClass = btn.getAttribute("data-wp");
+            document.body.className = themeClass;
+            localStorage.setItem("auraos_wallpaper", themeClass);
+        });
+    });
 
     const savedWp = localStorage.getItem("auraos_wallpaper");
     if (savedWp) { document.body.className = savedWp; }
 
-    // --- 10. LIVE STATUS BAR CLOCK ---
+    // --- 12. LIVE CLOCK ---
     function updateClock() {
         const now = new Date();
         currentTimeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
